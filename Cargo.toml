@@ -4,4 +4,6 @@ version = "0.1.0"
 authors = ["Joe Fredette <jfredett@gmail.com>"]
 edition = "2018"
 
-[dependencies]
+#[[bin]]
+#name="problem-###"
+#path = "src/bin/###.rs"
