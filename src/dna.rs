@@ -17,6 +17,7 @@ pub struct DNA {
 
 #[derive(PartialEq, Eq, Debug)]
 pub enum DNAError {
+    InvalidNucleotide,
     UnknownError
 }
 
@@ -26,6 +27,22 @@ impl DNA {
     /// Create an Empty DNA strand
     pub fn empty() -> DNA {
         DNA { content: vec![0], unused_mask: !0u64, terminus_idx: 0 }
+    }
+
+    /// Load a DNA strand from a string
+    pub fn from_string(s: String) -> DNAResult<DNA> {
+        let mut dna = DNA::empty();
+        for c in s.chars() {
+            match c {
+                'A' => dna.add(Nucleotide::A).ok(),
+                'T' => dna.add(Nucleotide::T).ok(),
+                'G' => dna.add(Nucleotide::G).ok(),
+                'C' => dna.add(Nucleotide::C).ok(),
+                _ => { return Err(DNAError::InvalidNucleotide); }
+            };
+        }
+
+        return Ok(dna);
     }
 
     /// Add a single nucleotide to the end of the DNA strand
@@ -86,6 +103,14 @@ mod tests {
             assert_eq!(dna.content, vec![0]);
             assert_eq!(dna.unused_mask, !0);
             assert_eq!(dna.terminus_idx, 0);
+        }
+
+        #[test]
+        fn from_string() {
+            let s = String::from("ACTG");
+            let dna = DNA::from_string(s).ok().unwrap();
+            //                         G T C A
+            assert_eq!(dna.content[0], 0b10110100);
         }
     }
 
@@ -172,6 +197,20 @@ mod benches {
         fn empty(b: &mut Bencher) {
             b.iter(|| {
                 black_box(DNA::empty());
+            });
+        }
+
+        #[bench]
+        fn from_string_short(b: &mut Bencher) {
+            b.iter(|| {
+                black_box(DNA::from_string("GATTACA".to_string()));
+            });
+        }
+
+        #[bench]
+        fn from_string_long(b: &mut Bencher) {
+            b.iter(|| {
+                black_box(DNA::from_string("GATTACAATATGGAGTATCAGCTGCATCGCGATTCGAGGATTCGAGAGACTTTGAACAGCCACCCACGTTCCTCAGAGAGAGCGCGTCA".to_string()));
             });
         }
     }
