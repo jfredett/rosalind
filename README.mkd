@@ -11,3 +11,7 @@ rest of the code will be a library at some point.
 
 Mostly this is for fun, so `\_('.')_/`
 
+## Where the bits are
+
+`src/lib.rs` is the main library with all the good parts
+`src/problems/###.rs` is the bit where individual problem solutions go
