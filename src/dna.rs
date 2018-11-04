@@ -55,10 +55,12 @@ impl DNA {
         Ok(())
     }
 
+    /// Checks if the terminal slot is full
     fn is_full(&self) -> bool {
         self.unused_mask == 0
     }
 
+    /// find the offset of the next available slot
     fn get_shift(&self) -> usize {
         let mut u = 0;
         let mut mask = self.unused_mask;
@@ -95,7 +97,7 @@ mod tests {
             let mut dna = DNA::empty();
             dna.add(Nucleotide::A).ok();
 
-            assert_eq!(dna.content[0], 0);
+            assert_eq!(dna.content[0], 0b00);
         }
 
         #[test]
@@ -103,7 +105,7 @@ mod tests {
             let mut dna = DNA::empty();
             dna.add(Nucleotide::C).ok();
 
-            assert_eq!(dna.content[0], 1);
+            assert_eq!(dna.content[0], 0b01);
         }
 
         #[test]
@@ -111,7 +113,7 @@ mod tests {
             let mut dna = DNA::empty();
             dna.add(Nucleotide::G).ok();
 
-            assert_eq!(dna.content[0], 2);
+            assert_eq!(dna.content[0], 0b10);
         }
 
         #[test]
@@ -119,7 +121,7 @@ mod tests {
             let mut dna = DNA::empty();
             dna.add(Nucleotide::T).ok();
 
-            assert_eq!(dna.content[0], 3);
+            assert_eq!(dna.content[0], 0b11);
         }
 
         #[test]
@@ -129,7 +131,7 @@ mod tests {
             dna.add(Nucleotide::A).ok();
             dna.add(Nucleotide::G).ok();
             dna.add(Nucleotide::C).ok();
-
+            //                           C G A T
             assert_eq!(dna.content[0], 0b01100011);
         }
 
