@@ -1,0 +1,13 @@
+# Rosalind Problems in Rust
+
+Fun times with Bioinformatics.
+
+## Rough design so far
+
+Nucleotides are encoded as 2-bit strings and packed into an automatically
+expanding vector of u64s. They're set up so that bitwise NOT is equivalent to
+Nucleotide Complement. Solutions will each have a binary in src/bin, and the
+rest of the code will be a library at some point.
+
+Mostly this is for fun, so `\_('.')_/`
+
