@@ -1,4 +1,5 @@
 language: rust
+sudo: required
 dist: trusty
 addons:
   apt:
@@ -6,12 +7,19 @@ addons:
       - libssl-dev
 rust:
   - nightly
+
+
+before_cache: |
+  if [[ "$TRAVIS_RUST_VERSION" == nightly ]]; then
+    RUSTFLAGS="--cfg procmacro2_semver_exempt" cargo install cargo-tarpaulin
+  fi
+
 script:
   - cargo clean
   - cargo build
     # wait extra because some of the tests take a while
   - travis_wait cargo test
+
 after_success: |
-  bash <(curl https://raw.githubusercontent.com/xd009642/tarpaulin/master/travis-install.sh)
   cargo tarpaulin --ciserver travis-ci --coveralls $TRAVIS_JOB_ID
 
