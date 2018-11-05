@@ -62,34 +62,11 @@ impl DNA {
     /// let dna = DNA::from_str("GATTACA").ok().unwrap();
     /// assert_eq!(dna.full_strand(), "GATTACA");
     /// ```
-    pub fn full_strand(&self) -> String {
-        // NB: Should probably implement iter for DNA, then use that to iterate over every 2 bit...
-        //     halfnibble?
+    pub fn full_strand(self) -> String {
         let mut ret = String::new();
-        let mask = 0b11;
-        for idx in 0..self.terminus_idx+1 {
-            let element = self.content[idx];
-
-            let range;
-            if idx == self.terminus_idx {
-                range = 0..self.get_shift();
-            } else {
-                range = 0..64;
-            }
-
-            for shift in range.step_by(2) {
-                // Example:
-                //
-                // element = 0b10_01_11_10, shift = 2.
-                // (0b10_01_10_11 & (0b11 << 2)) >> 2            ==>
-                // (0b10_01_10_11 & (0b00_00_00_11_00)) >> 2     ==>
-                // (0b00_00_10_00) >> 2                          ==>
-                // (0b00_00_00_10)
-                let nucleotide : Nucleotide = Nucleotide::from((element & (mask << shift)) >> shift);
-                ret.push(nucleotide.to_char());
-            }
+        for nucleotide in self {
+            ret.push(nucleotide.to_char());
         }
-
         return ret;
     }
 
@@ -158,12 +135,15 @@ impl Iterator for DNAIterator {
         let mask = 0b11;
         // XXX: 32 == number of nucleotides per block, probably refactor this to calculate
         // from the type?
-        let block_idx = self.idx % 32;
-        // we select in groups of 2, so 2x gets us the bit number we want
-        let shift = 2 * (self.idx / 32);
+        let block_idx = self.idx / 32;
+        let shift = 2 * (self.idx % 32);
+
         let element = self.dna.content[block_idx];
+
+        // We've finished all the necessary calculations, so we can increment the counter.
         self.idx += 1;
-        if block_idx == self.dna.terminus_idx && shift == (self.dna.get_shift() + 1) {
+
+        if block_idx == self.dna.terminus_idx && shift == self.dna.get_shift() {
             // we're on the last block and past the end of strand.
             None
         } else {
