@@ -1,4 +1,7 @@
 use crate::nucleotide::Nucleotide;
+use std::fs::File;
+use std::io::prelude::*;
+use std::path::Path;
 
 /// A Strand of DNA
 #[derive(PartialEq, Eq, Debug)]
@@ -38,11 +41,20 @@ impl DNA {
                 'T' => dna.add(Nucleotide::T).ok(),
                 'G' => dna.add(Nucleotide::G).ok(),
                 'C' => dna.add(Nucleotide::C).ok(),
+                '\n' => None,
                 _ => { return Err(DNAError::InvalidNucleotide); }
             };
         }
 
         return Ok(dna);
+    }
+
+    /// Load a DNA strand from a filepath
+    pub fn from_file<P: AsRef<Path>>(path: P) -> DNAResult<DNA> {
+        let mut file = File::open(path).ok().unwrap();
+        let mut contents = String::new();
+        file.read_to_string(&mut contents).ok();
+        return DNA::from_string(contents);
     }
 
     /// Add a single nucleotide to the end of the DNA strand
@@ -209,6 +221,13 @@ mod benches {
 
         #[bench]
         fn from_string_long(b: &mut Bencher) {
+            b.iter(|| {
+                black_box(DNA::from_string("GATTACAATATGGAGTATCAGCTGCATCGCGATTCGAGGATTCGAGAGACTTTGAACAGCCACCCACGTTCCTCAGAGAGAGCGCGTCA".to_string()));
+            });
+        }
+
+        #[bench]
+        fn from_file(b: &mut Bencher) {
             b.iter(|| {
                 black_box(DNA::from_string("GATTACAATATGGAGTATCAGCTGCATCGCGATTCGAGGATTCGAGAGACTTTGAACAGCCACCCACGTTCCTCAGAGAGAGCGCGTCA".to_string()));
             });
