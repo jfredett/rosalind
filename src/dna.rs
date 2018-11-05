@@ -32,7 +32,12 @@ impl DNA {
         DNA { content: vec![0], unused_mask: !0u64, terminus_idx: 0 }
     }
 
-    /// Load a DNA strand from a string
+    /// Load a DNA strand from a str
+    pub fn from_str(s: &str) -> DNAResult<DNA> {
+        return DNA::from_string(s.to_string());
+    }
+
+    /// Load a DNA strand from a String
     pub fn from_string(s: String) -> DNAResult<DNA> {
         let mut dna = DNA::empty();
         for c in s.chars() {
@@ -47,6 +52,46 @@ impl DNA {
         }
 
         return Ok(dna);
+    }
+
+    /// A string representation of the strand
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use rosalind::dna::*;
+    /// let dna = DNA::from_str("GATTACA").ok().unwrap();
+    /// assert_eq!(dna.full_strand(), "GATTACA");
+    /// ```
+    pub fn full_strand(&self) -> String {
+        // NB: Should probably implement iter for DNA, then use that to iterate over every 2 bit...
+        //     halfnibble?
+        let mut ret = String::new();
+        let mask = 0b11;
+        for idx in 0..self.terminus_idx+1 {
+            let element = self.content[idx];
+
+            let range;
+            if idx == self.terminus_idx {
+                range = 0..self.get_shift();
+            } else {
+                range = 0..64;
+            }
+
+            for shift in range.step_by(2) {
+                // Example:
+                //
+                // element = 0b10_01_11_10, shift = 2.
+                // (0b10_01_10_11 & (0b11 << 2)) >> 2            ==>
+                // (0b10_01_10_11 & (0b00_00_00_11_00)) >> 2     ==>
+                // (0b00_00_10_00) >> 2                          ==>
+                // (0b00_00_00_10)
+                let nucleotide : Nucleotide = Nucleotide::from((element & (mask << shift)) >> shift);
+                ret.push(nucleotide.to_char());
+            }
+        }
+
+        return ret;
     }
 
     /// Load a DNA strand from a filepath
@@ -106,6 +151,17 @@ impl DNA {
 mod tests {
     use super::*;
 
+    mod display {
+        use super::*;
+
+        #[test]
+        fn full_strand() {
+            let dna = DNA::from_str("GATTACA").ok().unwrap();
+            assert_eq!(dna.full_strand(), "GATTACA");
+        }
+
+    }
+
     mod creation {
         use super::*;
 
@@ -121,7 +177,14 @@ mod tests {
         fn from_string() {
             let s = String::from("ACTG");
             let dna = DNA::from_string(s).ok().unwrap();
-            //                         G T C A
+            //                           G T C A
+            assert_eq!(dna.content[0], 0b10110100);
+        }
+
+        #[test]
+        fn from_str() {
+            let dna = DNA::from_str("ACTG").ok().unwrap();
+            //                           G T C A
             assert_eq!(dna.content[0], 0b10110100);
         }
     }
@@ -223,6 +286,20 @@ mod benches {
         fn from_string_long(b: &mut Bencher) {
             b.iter(|| {
                 black_box(DNA::from_string("GATTACAATATGGAGTATCAGCTGCATCGCGATTCGAGGATTCGAGAGACTTTGAACAGCCACCCACGTTCCTCAGAGAGAGCGCGTCA".to_string()));
+            });
+        }
+
+        #[bench]
+        fn from_str_short(b: &mut Bencher) {
+            b.iter(|| {
+                black_box(DNA::from_str("GATTACA"));
+            });
+        }
+
+        #[bench]
+        fn from_str_long(b: &mut Bencher) {
+            b.iter(|| {
+                black_box(DNA::from_str("GATTACAATATGGAGTATCAGCTGCATCGCGATTCGAGGATTCGAGAGACTTTGAACAGCCACCCACGTTCCTCAGAGAGAGCGCGTCA"));
             });
         }
 
