@@ -16,3 +16,7 @@ categories = ["data-structures"]
 [[bin]]
 name="problem-dna"
 path = "src/problems/dna.rs"
+
+[[bin]]
+name="problem-rna"
+path = "src/problems/rna.rs"
