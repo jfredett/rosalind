@@ -4,4 +4,4 @@
 extern crate test;
 
 pub mod nucleotide;
-pub mod dna;
+pub mod strand;

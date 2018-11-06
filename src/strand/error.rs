@@ -1,5 +1,5 @@
 #[derive(PartialEq, Eq, Debug)]
-pub enum DNAError {
+pub enum StrandError {
     InvalidNucleotide,
     UnknownError
 }
