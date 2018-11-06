@@ -1,17 +1,21 @@
-
 pub mod error;
 pub mod result;
 pub mod iterator;
+pub mod mode;
 
 pub use crate::strand::error::*;
 pub use crate::strand::result::*;
 pub use crate::strand::iterator::*;
+use crate::strand::mode::*;
+
 pub use crate::nucleotide::Nucleotide;
 
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 use std::collections::HashMap;
+
+
 
 /// A Nucleotide strand
 #[derive(PartialEq, Eq, Debug)]
@@ -25,12 +29,16 @@ pub struct Strand {
     unused_mask: u64,
     /// Index of the end of the strand
     terminus_idx: usize,
+    /// Whether to interpret this as a DNA or RNA string
+    mode : StrandMode,
 }
 
 impl Strand {
     /// Create an Empty Strand
+    ///
+    /// By default, a DNA strand
     pub fn empty() -> Strand {
-        Strand { content: vec![0], unused_mask: !0u64, terminus_idx: 0 }
+        Strand { content: vec![0], unused_mask: !0u64, terminus_idx: 0, mode: StrandMode::DNA }
     }
 
     /// Load a Strand from a str
@@ -55,7 +63,26 @@ impl Strand {
         return Ok(strand);
     }
 
+    pub fn convert(&mut self) {
+        if self.is_dna() {
+            self.mode = StrandMode::RNA;
+        } else {
+            self.mode = StrandMode::DNA;
+        }
+    }
+
+    pub fn is_dna(&self) -> bool {
+        self.mode == StrandMode::DNA
+    }
+
+    pub fn is_rna(&self) -> bool {
+        self.mode == StrandMode::RNA
+    }
+
+    /// Returns a hash containing counts of all the nucleotides in this strand.
     pub fn nucleotide_stats(self) -> HashMap<Nucleotide,i64> {
+        if self.is_rna() { panic!("Cannot do stats on an RNA strand yet"); }
+
         let mut results = HashMap::new();
 
         results.insert(Nucleotide::G, 0);
@@ -81,8 +108,9 @@ impl Strand {
     /// ```
     pub fn full_strand(self) -> String {
         let mut ret = String::new();
+        let mode = self.mode;
         for nucleotide in self {
-            ret.push(nucleotide.to_char());
+            ret.push(nucleotide.to_char(mode));
         }
         return ret;
     }
@@ -153,6 +181,12 @@ mod tests {
             assert_eq!(strand.full_strand(), "GATTACA");
         }
 
+        #[test]
+        fn full_strand_as_rna() {
+            let mut strand = Strand::from_str("GATTACA").ok().unwrap();
+            strand.convert();
+            assert_eq!(strand.full_strand(), "GAUUACA");
+        }
     }
 
     mod stats {
