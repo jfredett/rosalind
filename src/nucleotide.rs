@@ -1,4 +1,6 @@
-#[derive(PartialEq, Eq, Debug, Hash)]
+use crate::strand::mode::StrandMode;
+
+#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy)]
 /// Represents a single base Nucleotide as a two-bit string.
 ///
 /// Values are mapped such that logical NOT corresponds to nucleotide complement.
@@ -10,12 +12,12 @@ pub enum Nucleotide {
 }
 
 impl Nucleotide {
-    pub fn to_char(&self) -> char {
+    pub fn to_char(&self, mode : StrandMode) -> char {
         match self {
             Nucleotide::A => 'A',
             Nucleotide::C => 'C',
             Nucleotide::G => 'G',
-            Nucleotide::T => 'T',
+            Nucleotide::T => { if mode == StrandMode::DNA { 'T' } else { 'U' } },
         }
     }
 }
@@ -37,27 +39,51 @@ impl From<u64> for Nucleotide {
 mod tests {
     use super::*;
 
-    mod imp {
+
+    mod to_char_with_rna {
         use super::*;
 
         #[test]
         fn to_char_a() {
-            assert_eq!(Nucleotide::A.to_char(), 'A');
+            assert_eq!(Nucleotide::A.to_char(StrandMode::RNA), 'A');
         }
 
         #[test]
         fn to_char_c() {
-            assert_eq!(Nucleotide::C.to_char(), 'C');
+            assert_eq!(Nucleotide::C.to_char(StrandMode::RNA), 'C');
         }
 
         #[test]
         fn to_char_g() {
-            assert_eq!(Nucleotide::G.to_char(), 'G');
+            assert_eq!(Nucleotide::G.to_char(StrandMode::RNA), 'G');
         }
 
         #[test]
         fn to_char_t() {
-            assert_eq!(Nucleotide::T.to_char(), 'T');
+            assert_eq!(Nucleotide::T.to_char(StrandMode::RNA), 'U');
+        }
+    }
+    mod to_char_with_dna {
+        use super::*;
+
+        #[test]
+        fn to_char_a() {
+            assert_eq!(Nucleotide::A.to_char(StrandMode::DNA), 'A');
+        }
+
+        #[test]
+        fn to_char_c() {
+            assert_eq!(Nucleotide::C.to_char(StrandMode::DNA), 'C');
+        }
+
+        #[test]
+        fn to_char_g() {
+            assert_eq!(Nucleotide::G.to_char(StrandMode::DNA), 'G');
+        }
+
+        #[test]
+        fn to_char_t() {
+            assert_eq!(Nucleotide::T.to_char(StrandMode::DNA), 'T');
         }
     }
 
