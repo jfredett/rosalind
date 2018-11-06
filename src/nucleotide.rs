@@ -30,7 +30,6 @@ impl From<u64> for Nucleotide {
             _ => panic!("Cannot convert value to Nucleotide, value `{:?}` too large", v)
         }
     }
-
 }
 
 

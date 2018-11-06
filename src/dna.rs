@@ -1,7 +1,9 @@
 use crate::nucleotide::Nucleotide;
+
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
+use std::collections::HashMap;
 
 /// A Strand of DNA
 #[derive(PartialEq, Eq, Debug)]
@@ -51,6 +53,21 @@ impl DNA {
         }
 
         return Ok(dna);
+    }
+
+    pub fn nucleotide_stats(self) -> HashMap<Nucleotide,i64> {
+        let mut results = HashMap::new();
+
+        results.insert(Nucleotide::G, 0);
+        results.insert(Nucleotide::C, 0);
+        results.insert(Nucleotide::T, 0);
+        results.insert(Nucleotide::A, 0);
+
+        for nucleotide in self {
+            *results.get_mut(&nucleotide).unwrap() += 1;
+        }
+
+        return results;
     }
 
     /// A string representation of the strand
@@ -184,6 +201,20 @@ mod tests {
             assert_eq!(dna.full_strand(), "GATTACA");
         }
 
+    }
+
+    mod stats {
+        use super::*;
+
+        #[test]
+        fn nucleotide_stats() {
+            let dna = DNA::from_str("GATTACA").ok().unwrap();
+            let stats = dna.nucleotide_stats();
+            assert_eq!(stats.get(&Nucleotide::A), Some(&3));
+            assert_eq!(stats.get(&Nucleotide::T), Some(&2));
+            assert_eq!(stats.get(&Nucleotide::C), Some(&1));
+            assert_eq!(stats.get(&Nucleotide::G), Some(&1));
+        }
     }
 
     mod creation {
@@ -372,6 +403,28 @@ mod benches {
                 dna_strand.add(Nucleotide::T); dna_strand.add(Nucleotide::A); dna_strand.add(Nucleotide::C); dna_strand.add(Nucleotide::G);
 
                 dna_strand.add(Nucleotide::T); dna_strand.add(Nucleotide::A); dna_strand.add(Nucleotide::C); dna_strand.add(Nucleotide::G);
+            });
+        }
+    }
+
+    mod stats {
+        use super::*;
+
+        #[bench]
+        fn nucleotide_stats_short(b: &mut Bencher) {
+            b.iter(|| {
+                let dna = DNA::from_str("GATTACA").ok().unwrap();
+                let stats = dna.nucleotide_stats();
+                black_box(stats);
+            });
+        }
+
+        #[bench]
+        fn nucleotide_stats_long(b: &mut Bencher) {
+            b.iter(|| {
+                let dna = DNA::from_str("GATTACAGATTATTTATTATCACGTGACGGCATCGGCAGCAGCATACTCTGCGCAGGCGTAGCGCGATCTCTAGAGCGCGCAGATTC").ok().unwrap();
+                let stats = dna.nucleotide_stats();
+                black_box(stats);
             });
         }
     }
