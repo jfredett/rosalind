@@ -3,7 +3,16 @@ name = "rosalind"
 version = "0.1.0"
 authors = ["Joe Fredette <jfredett@gmail.com>"]
 edition = "2018"
+description = "Rosalind Bioinformatics problems"
+repository = "https://github.com/jfredett/rosalind"
+readme = "README.md"
+keywords = ["DNA", "Bioinformatics"]
+categories = ["data-structures"]
 
 #[[bin]]
 #name="problem-###"
 #path = "src/bin/###.rs"
+
+[[bin]]
+name="problem-dna"
+path = "src/problems/dna.rs"

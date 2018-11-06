@@ -91,6 +91,7 @@ impl DNA {
     /// OR the nucleotide code << that position to the vector
     /// AND the used mask (!unused) to fix any messed up bits
     /// return Result
+    ///
     pub fn add(&mut self, n: Nucleotide) -> DNAResult<()> {
         if self.is_full() {
             self.content.push(0);

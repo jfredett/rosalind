@@ -1,4 +1,4 @@
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, Hash)]
 /// Represents a single base Nucleotide as a two-bit string.
 ///
 /// Values are mapped such that logical NOT corresponds to nucleotide complement.
